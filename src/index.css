@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Variables CSS de base - Définition du système de couleurs
+ * Alignées sur les couleurs Tailwind pour cohérence
+ */
+:root {
+  /* Variables pour le thème clair par défaut */
+  --bg-primary: #F3F4F6; /* gray-100 */
+  --bg-secondary: #FFFFFF; /* white */
+  --bg-card: #FFFFFF; /* white */
+  --text-primary: #111827; /* gray-900 */
+  --text-secondary: #4B5563; /* gray-600 */
+  --border-color: rgba(203, 213, 225, 0.8); /* slate-200 avec opacité */
+  --accent-color: #3B82F6; /* blue-500 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+  --hover-color: rgba(59, 130, 246, 0.1); /* blue-500 avec opacité */
+  
+  /* Variables pour les cartes d'aéroport */
+  --airport-card-bg: #ffffff;
+  --airport-card-text: #111827;
+  --airport-card-border: transparent;
+  --card-shadow: rgba(59, 130, 246, 0.1);
+}
+
+/**
+ * Variables pour le thème sombre
+ * Activées automatiquement quand .dark est présent
+ */
+.dark {
+  --bg-primary: #111827; /* gray-900 */
+  --bg-secondary: #1F2937; /* gray-800 */
+  --bg-card: rgba(31, 41, 55, 0.8); /* gray-800 avec opacité */
+  --text-primary: #F3F4F6; /* gray-100 */
+  --text-secondary: #D1D5DB; /* gray-300 */
+  --border-color: rgba(75, 85, 99, 0.5); /* gray-500 avec opacité */
+  --accent-color: #60A5FA; /* blue-400 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --hover-color: rgba(59, 130, 246, 0.2); /* blue-500 avec opacité */
+  
+  /* Variables pour les cartes d'aéroport en mode sombre */
+  --airport-card-bg: rgba(31, 41, 55, 0.95);
+  --airport-card-text: #e2e8f0;
+  --airport-card-border: transparent;
+  --card-shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* Styles de base pour l'application entière */
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: initial;
+}
+
+/* Classes pour les dégradés d'arrière-plan */
+.bg-gradient-light {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e1f5fe 100%);
+}
+
+.bg-gradient-dark {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+/* Animation pour les transitions de page */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Supprimer les styles par défaut qui entrent en conflit */
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+a {
+  font-weight: 500;
+  color: #3b82f6; /* blue-500 */
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #2563eb; /* blue-600 */
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2.5s infinite;
+}
+
+/* Styles Tailwind personnalisés */
+@layer components {
+  .theme-toggle {
+    @apply relative p-2 rounded-lg transition-all duration-300 
+           hover:bg-gray-100 dark:hover:bg-gray-700
+           focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+           transform hover:scale-110;
+  }
+
+  .theme-toggle-icon {
+    @apply w-5 h-5 transform transition-transform duration-300
+           text-gray-500 dark:text-gray-400
+           hover:text-blue-600 dark:hover:text-blue-300;
+  }
+}

@@ -1,0 +1,208 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Variables de thème améliorées (mode clair) */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --accent-color: #4f46e5;
+  --accent-light: #6366f1;
+  --card-shadow: rgba(79, 70, 229, 0.1);
+  
+  /* Variables pour les composants spécifiques */
+  --airport-card-bg: #ffffff;
+  --airport-card-text: #0f172a;
+  --airport-card-border: transparent;
+  --airport-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --airport-card-hover-shadow: 0 8px 24px rgba(79, 70, 229, 0.15);
+  
+  --dialog-bg: rgba(255, 255, 255, 0.95);
+  --dialog-text: #0f172a;
+  --dialog-border: #e2e8f0;
+  --dialog-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  
+  --header-bg: rgba(255, 255, 255, 0.9);
+  --header-text: #0f172a;
+  --header-border: #e2e8f0;
+  --header-shadow: 0 4px 16px rgba(79, 70, 229, 0.08);
+  
+  --button-primary-bg: linear-gradient(135deg, #4f46e5, #4338ca);
+  --button-primary-text: #ffffff;
+  --button-primary-hover: linear-gradient(135deg, #4338ca, #3730a3);
+  --button-primary-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  
+  --button-secondary-bg: #f1f5f9;
+  --button-secondary-text: #334155;
+  --button-secondary-hover: #e2e8f0;
+  --button-secondary-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  
+  /* Effets et animations */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  
+  /* Arrière-plans dégradés */
+  --gradient-bg: linear-gradient(135deg, #f8fafc, #eff6ff, #eef2ff);
+  --gradient-card: linear-gradient(135deg, #ffffff, #fafafa);
+}
+
+/* Transitions fluides pour tous les éléments */
+*, *::before, *::after {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease,
+              transform 0.3s ease;
+}
+
+/* Appliquer les couleurs de base au body */
+body {
+  background-color: var(--bg-primary);
+  background-image: var(--gradient-bg);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Styles pour le mode sombre à travers les variables CSS */
+.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --accent-color: #6366f1;
+  --accent-light: #818cf8;
+  --card-shadow: rgba(0, 0, 0, 0.35);
+  
+  --airport-card-bg: rgba(30, 41, 59, 0.95);
+  --airport-card-text: #f1f5f9;
+  --airport-card-border: rgba(71, 85, 105, 0.2);
+  --airport-card-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --airport-card-hover-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+  
+  --dialog-bg: rgba(15, 23, 42, 0.95);
+  --dialog-text: #f1f5f9;
+  --dialog-border: #334155;
+  --dialog-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  
+  --header-bg: rgba(15, 23, 42, 0.9);
+  --header-text: #f1f5f9;
+  --header-border: #334155;
+  --header-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  
+  --button-primary-bg: linear-gradient(135deg, #6366f1, #4f46e5);
+  --button-primary-text: #ffffff;
+  --button-primary-hover: linear-gradient(135deg, #4f46e5, #4338ca);
+  --button-primary-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  
+  --button-secondary-bg: #1e293b;
+  --button-secondary-text: #e2e8f0;
+  --button-secondary-hover: #334155;
+  --button-secondary-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  
+  /* Arrière-plans dégradés pour le mode sombre */
+  --gradient-bg: linear-gradient(135deg, #0f172a, #1e1b4b, #0f172a);
+  --gradient-card: linear-gradient(135deg, #1e293b, #0f172a);
+}
+
+/* Classes utilitaires pour appliquer les variables CSS */
+.bg-theme-primary {
+  background-color: var(--bg-primary);
+}
+.bg-theme-secondary {
+  background-color: var(--bg-secondary);
+}
+.text-theme-primary {
+  color: var(--text-primary);
+}
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+.border-theme {
+  border-color: var(--dialog-border);
+}
+
+/* Classes utilitaires pour les composants */
+.card-theme {
+  background-color: var(--airport-card-bg);
+  background-image: var(--gradient-card);
+  color: var(--airport-card-text);
+  border-color: var(--airport-card-border);
+  box-shadow: var(--airport-card-shadow);
+  border-radius: 12px;
+  transition: transform var(--transition-normal), 
+              box-shadow var(--transition-normal);
+}
+.card-theme:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--airport-card-hover-shadow);
+}
+
+.dialog-theme {
+  background-color: var(--dialog-bg);
+  color: var(--dialog-text);
+  border-color: var(--dialog-border);
+  box-shadow: var(--dialog-shadow);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+}
+
+.btn-primary-theme {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  box-shadow: var(--button-primary-shadow);
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 600;
+  transition: transform var(--transition-fast), 
+              box-shadow var(--transition-fast);
+}
+.btn-primary-theme:hover {
+  background: var(--button-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+}
+
+.btn-secondary-theme {
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  box-shadow: var(--button-secondary-shadow);
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  transition: transform var(--transition-fast), 
+              box-shadow var(--transition-fast);
+}
+.btn-secondary-theme:hover {
+  background-color: var(--button-secondary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Animations et effets supplémentaires */
+.hover-scale {
+  transition: transform var(--transition-fast);
+}
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+.hover-lift {
+  transition: transform var(--transition-normal), 
+              box-shadow var(--transition-normal);
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+} 

@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    // Base Options for modern Node.js/Browser environments
+    "target": "ES2022",
+    "module": "NodeNext", // Use modern ES module system
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true, // Allows default imports from commonjs modules
+    "forceConsistentCasingInFileNames": true, // Prevent issues on case-sensitive systems
+    
+    // Base URL and Paths for monorepo resolution - REMOVED
+    // "baseUrl": ".", 
+    // "paths": {
+    //   "@fyg/shared": ["../packages/shared/src"], 
+    //   "@fyg/shared/*": ["../packages/shared/src/*"] 
+    // },
+
+    // Strictness & Quality
+    "strict": true, // Enable all strict type-checking options
+    "skipLibCheck": true, // Skip type checking of declaration files (improves performance)
+    "noUnusedLocals": true, // Report errors on unused local variables
+    "noUnusedParameters": true, // Report errors on unused parameters
+    "noImplicitReturns": true, // Report error when not all code paths in function return a value
+    "noFallthroughCasesInSwitch": true, // Report errors for fallthrough cases in switch statement
+
+    // Source Maps for Debugging
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // Monorepo Settings (Enable project references)
+    // "composite": true, // Usually enabled in individual package tsconfigs, not the base
+
+    // JSX Configuration (if frontend packages extend this)
+    "jsx": "react-jsx" // Or "preserve" depending on the build tool
+  },
+  "exclude": ["node_modules", "**/dist"] // Exclude node_modules and dist folders globally
+} 
