@@ -14,6 +14,7 @@ const AirlineAdminTableMinimal = () => {
     try {
       // Simplifié: fetch toutes les airlines sans pagination/recherche pour le test
       const response = await axios.get<{ docs: AirlineData[] }>('/api/airlines?limit=100'); // Limite à 100 pour test
+      console.log('[fetchAirlines Frontend] Received response.data:', response.data);
       setAirlines(response.data.docs);
     } catch (err) {
       console.error("Erreur lors de la récupération des compagnies:", err);
