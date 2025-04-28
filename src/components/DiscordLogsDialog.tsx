@@ -104,10 +104,22 @@ export const DiscordLogsDialog: React.FC<DiscordLogsDialogProps> = ({ open, onCl
     try {
       setLoading(true);
       const response = await fetch(`/api/discord-logs?page=${page}&limit=${rowsPerPage}&search=${searchTerm}`);
-      if (!response.ok) {
-        throw new Error('Erreur lors de la récupération des logs');
+      
+      let data: { logs: CommandLog[], total: number };
+      try {
+        data = await response.json();
+        if (!response.ok) {
+           console.error("Erreur HTTP mais réponse JSON reçue:", response.status, data);
+           const errorMsg = (data as any).message || 'Erreur lors de la récupération des logs'; 
+           throw new Error(errorMsg);
+        }
+      } catch (jsonError) {
+        console.error('Échec du parsing JSON:', jsonError);
+        const textResponse = await response.text();
+        console.error('Réponse texte brute du serveur:', textResponse);
+        throw new Error('Réponse invalide reçue du serveur.');
       }
-      const data = await response.json();
+      
       console.log('Logs récupérés:', data.logs);
       data.logs.forEach((log: CommandLog) => {
         console.log(`Log ID: ${log._id}, Airport: ${log.details.airport}, Airline: ${log.details.airline}, Found: ${log.details.found}, ParkingsCount: ${log.details.parkingsCount}`);
