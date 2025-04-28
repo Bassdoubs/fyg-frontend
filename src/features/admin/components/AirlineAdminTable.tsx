@@ -44,10 +44,11 @@ const AirlineAdminTableMinimal = () => {
         <Box component="ul" sx={{ mt: 2, pl: 2 }}> {/* Utilisation de Box comme ul */} 
           {airlines && airlines.length > 0 ? (
             airlines
-              .filter(a => a && a._id && a.name) // Filtre simple
+              // .filter(a => a && a._id && a.name) // <-- FILTRE SUPPRIMÉ TEMPORAIREMENT
               .map((airline) => (
-                <li key={airline._id}>
-                  {airline.icao} - {airline.name}
+                // Ajout de vérifications pour l'affichage au cas où des données seraient nulles
+                <li key={airline?._id || Math.random()}> 
+                  {airline?.icao || '?'} - {airline?.name || '?'} 
                 </li>
               ))
           ) : (
