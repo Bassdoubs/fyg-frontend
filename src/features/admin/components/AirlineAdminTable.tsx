@@ -216,8 +216,10 @@ const AirlineAdminTable = () => {
               </TableHead>
               <TableBody>
                 {airlines.length > 0 ? (
-                  airlines.map((airline) => (
-                    <TableRow hover role="checkbox" tabIndex={-1} key={airline?._id || Math.random()}>
+                  airlines
+                    .filter(a => a && a._id)
+                    .map((airline) => (
+                    <TableRow hover role="checkbox" tabIndex={-1} key={airline._id}>
                       <TableCell> {/* Placeholder Logo */} - </TableCell>
                       <TableCell component="th" scope="row">{airline?.icao || '?'}</TableCell>
                       <TableCell>{airline?.name || '?'}</TableCell>
