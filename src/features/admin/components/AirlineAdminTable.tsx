@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+// Importer l'instance configurée au lieu de l'axios de base
+// import axios from 'axios'; <-- Supprimé
+import api from '../../../services/api'; // <-- AJOUT (Adapter chemin si besoin)
 import { AirlineData } from '@bassdoubs/fyg-shared';
 import { Typography, Box, CircularProgress, Alert } from '@mui/material'; // Garder imports basiques MUI
 
@@ -12,10 +14,18 @@ const AirlineAdminTableMinimal = () => {
     setLoading(true);
     setError(null);
     try {
-      // Simplifié: fetch toutes les airlines sans pagination/recherche pour le test
-      const response = await axios.get<{ docs: AirlineData[] }>('/api/airlines?limit=100'); // Limite à 100 pour test
+      // Utiliser l'instance configurée 'api' au lieu de 'axios'
+      const response = await api.get<{ docs: AirlineData[] }>('/api/airlines?limit=100'); // Limite à 100 pour test
       console.log('[fetchAirlines Frontend] Received response.data:', response.data);
-      setAirlines(response.data.docs);
+      // Tenter d'accéder à .docs SEULEMENT si response.data est un objet
+      if (response.data && typeof response.data === 'object' && 'docs' in response.data) {
+        setAirlines(response.data.docs);
+      } else {
+        // Gérer le cas où la réponse n'a pas le format attendu (ex: HTML reçu)
+        console.error("Réponse API inattendue:", response.data);
+        setError('Réponse inattendue reçue du serveur.');
+        setAirlines([]);
+      }
     } catch (err) {
       console.error("Erreur lors de la récupération des compagnies:", err);
       setError('Impossible de charger les données des compagnies.');
