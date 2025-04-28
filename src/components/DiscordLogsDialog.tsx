@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../services/api';
 import {
   Dialog,
   DialogTitle,
@@ -103,31 +104,26 @@ export const DiscordLogsDialog: React.FC<DiscordLogsDialogProps> = ({ open, onCl
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/discord-logs?page=${page}&limit=${rowsPerPage}&search=${searchTerm}`);
-      
-      let data: { logs: CommandLog[], total: number };
-      try {
-        data = await response.json();
-        if (!response.ok) {
-           console.error("Erreur HTTP mais réponse JSON reçue:", response.status, data);
-           const errorMsg = (data as any).message || 'Erreur lors de la récupération des logs'; 
-           throw new Error(errorMsg);
+      const response = await api.get<{ logs: CommandLog[], total: number }>('/api/discord-logs', {
+        params: {
+          page: page,
+          limit: rowsPerPage,
+          search: searchTerm || undefined
         }
-      } catch (jsonError) {
-        console.error('Échec du parsing JSON:', jsonError);
-        const textResponse = await response.text();
-        console.error('Réponse texte brute du serveur:', textResponse);
-        throw new Error('Réponse invalide reçue du serveur.');
-      }
+      });
       
+      const data = response.data;
+
       console.log('Logs récupérés:', data.logs);
       data.logs.forEach((log: CommandLog) => {
         console.log(`Log ID: ${log._id}, Airport: ${log.details.airport}, Airline: ${log.details.airline}, Found: ${log.details.found}, ParkingsCount: ${log.details.parkingsCount}`);
       });
-      setLogs(data.logs);
-      setTotalLogs(data.total);
-    } catch (error) {
-      console.error('Erreur:', error);
+      setLogs(data.logs || []);
+      setTotalLogs(data.total || 0);
+    } catch (error: any) {
+      console.error('Erreur lors de la récupération des logs:', error);
+      const message = error.response?.data?.message || 'Erreur lors de la récupération des logs.';
+      setSnackbar({ open: true, message, severity: 'error' });
       setLogs([]);
       setTotalLogs(0);
     } finally {
@@ -164,13 +160,7 @@ export const DiscordLogsDialog: React.FC<DiscordLogsDialogProps> = ({ open, onCl
     if (!logToDelete) return;
 
     try {
-      const response = await fetch(`/api/discord-logs/${logToDelete}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de la suppression');
-      }
+      await api.delete(`/api/discord-logs/${logToDelete}`);
 
       setSnackbar({
         open: true,
@@ -178,13 +168,13 @@ export const DiscordLogsDialog: React.FC<DiscordLogsDialogProps> = ({ open, onCl
         severity: 'success'
       });
       
-      // Rafraîchir les données
       fetchLogs();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la suppression:', error);
+       const message = error.response?.data?.message || 'Erreur lors de la suppression.';
       setSnackbar({
         open: true,
-        message: 'Erreur lors de la suppression',
+        message: message,
         severity: 'error'
       });
     } finally {
@@ -207,11 +197,7 @@ export const DiscordLogsDialog: React.FC<DiscordLogsDialogProps> = ({ open, onCl
 
     try {
       const deletionPromises = selectedLogs.map(id => 
-        fetch(`/api/discord-logs/${id}`, { method: 'DELETE' })
-          .then(response => {
-            if (!response.ok) throw new Error(`Erreur lors de la suppression du log ${id}`);
-            return response.json();
-          })
+        api.delete(`/api/discord-logs/${id}`)
       );
 
       await Promise.all(deletionPromises);
@@ -223,13 +209,13 @@ export const DiscordLogsDialog: React.FC<DiscordLogsDialogProps> = ({ open, onCl
       });
       
       setSelectedLogs([]);
-      
       fetchLogs();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors de la suppression multiple:', error);
+      const message = error.response?.data?.message || 'Erreur lors de la suppression multiple.';
       setSnackbar({
         open: true,
-        message: 'Erreur lors de la suppression multiple',
+        message: message,
         severity: 'error'
       });
     } finally {
@@ -259,29 +245,19 @@ export const DiscordLogsDialog: React.FC<DiscordLogsDialogProps> = ({ open, onCl
     try {
       setIsCleaning(true);
       
-      // On teste d'abord pour voir quel est le log le plus ancien
-      const oldestResponse = await fetch('/api/discord-logs/oldest');
-      const oldestData = await oldestResponse.json();
+      const oldestResponse = await api.get('/api/discord-logs/oldest');
+      const oldestData = oldestResponse.data;
       console.log('Log le plus ancien avant purge:', oldestData);
 
-      const response = await fetch(`/api/discord-logs/clean?days=${daysToKeep}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ days: daysToKeep })
+      const response = await api.post(`/api/discord-logs/clean`, {
+        days: daysToKeep 
       });
       
-      if (!response.ok) {
-        throw new Error('Erreur lors du nettoyage des logs');
-      }
-
-      const data = await response.json();
+      const data = response.data;
       console.log('Résultat du nettoyage:', data);
       
-      // Vérifier à nouveau le log le plus ancien après purge
-      const newOldestResponse = await fetch('/api/discord-logs/oldest');
-      const newOldestData = await newOldestResponse.json();
+      const newOldestResponse = await api.get('/api/discord-logs/oldest');
+      const newOldestData = newOldestResponse.data;
       console.log('Log le plus ancien après purge:', newOldestData);
       
       let message = '';
@@ -297,18 +273,16 @@ export const DiscordLogsDialog: React.FC<DiscordLogsDialogProps> = ({ open, onCl
         severity: 'success'
       });
       
-      // Forcer un retour à la première page après nettoyage
       setPage(0);
-      
-      // Rafraîchir les données après un court délai pour être sûr que la base a bien été mise à jour
       setTimeout(() => {
         fetchLogs();
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors du nettoyage:', error);
+      const message = error.response?.data?.message || 'Erreur lors du nettoyage des logs.';
       setSnackbar({
         open: true,
-        message: 'Erreur lors du nettoyage des logs',
+        message: message,
         severity: 'error'
       });
     } finally {
