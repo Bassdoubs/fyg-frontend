@@ -800,7 +800,7 @@ export const Header = ({
                 Administration
               </MenuItem>
             )}
-            <MenuItem onClick={onLogout}>
+            <MenuItem onClick={() => { handleMenuClose(); onLogout(); }}>
               <ListItemIcon>
                 <LogoutIcon fontSize="small" />
               </ListItemIcon>
