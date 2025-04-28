@@ -216,7 +216,6 @@ const AirlineAdminTable = () => {
               </TableHead>
               <TableBody>
                 {airlines.length > 0 ? (
-                  console.log(JSON.stringify(airlines)),
                   airlines.map((airline) => (
                     <TableRow hover role="checkbox" tabIndex={-1} key={airline._id}>
                       <TableCell>
