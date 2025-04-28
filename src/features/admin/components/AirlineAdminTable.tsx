@@ -217,33 +217,13 @@ const AirlineAdminTable = () => {
               <TableBody>
                 {airlines.length > 0 ? (
                   airlines.map((airline) => (
-                    <TableRow hover role="checkbox" tabIndex={-1} key={airline._id}>
-                      <TableCell>
-                        <Avatar 
-                          src={airline.logoUrl || undefined} // Utiliser l'URL du logo
-                          alt={airline.name} 
-                          sx={{ width: 32, height: 32, bgcolor: 'grey.300' }}
-                        >
-                          {!airline.logoUrl && <BrokenImageIcon fontSize="small" />} {/* Icône si pas de logo */}
-                        </Avatar>
-                      </TableCell>
-                      <TableCell component="th" scope="row">{airline.icao}</TableCell>
-                      <TableCell>{airline.name}</TableCell>
-                      <TableCell>{airline.callsign || 'N/A'}</TableCell>
-                      <TableCell>{getCountryName(airline.country)}</TableCell>
-                      <TableCell align="right">
-                        <Tooltip title="Modifier">
-                          <IconButton size="small" onClick={() => handleEditAirline(airline)}>
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Supprimer">
-                          {/* Utiliser airline._id directement */}
-                          <IconButton size="small" onClick={() => handleDeleteAirline(airline)} sx={{ color: 'error.main' }}>
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
+                    <TableRow hover role="checkbox" tabIndex={-1} key={airline?._id || Math.random()}>
+                      <TableCell> {/* Placeholder Logo */} - </TableCell>
+                      <TableCell component="th" scope="row">{airline?.icao || '?'}</TableCell>
+                      <TableCell>{airline?.name || '?'}</TableCell>
+                      <TableCell>{airline?.callsign || '?'}</TableCell>
+                      <TableCell> {/* Placeholder Pays */} {airline?.country || '?'} </TableCell>
+                      <TableCell align="right"> {/* Placeholder Actions */} - </TableCell>
                     </TableRow>
                   ))
                 ) : (
