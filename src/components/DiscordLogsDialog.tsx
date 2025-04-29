@@ -40,14 +40,7 @@ import AirlinesIcon from '@mui/icons-material/Airlines';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
-import { 
-  NavigateBefore, 
-  NavigateNext, 
-  FirstPage, 
-  LastPage 
-} from '@mui/icons-material';
 import { format } from 'date-fns';
-import { useDarkMode } from '../hooks/useDarkMode';
 
 interface CommandLog {
   _id: string;
@@ -83,7 +76,6 @@ export const DiscordLogsDialog: React.FC<DiscordLogsDialogProps> = ({ open, onCl
   const [logs, setLogs] = useState<CommandLog[]>([]);
   const [totalLogs, setTotalLogs] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [logToDelete, setLogToDelete] = useState<string | null>(null);
   const [selectedLogs, setSelectedLogs] = useState<string[]>([]);
@@ -103,7 +95,6 @@ export const DiscordLogsDialog: React.FC<DiscordLogsDialogProps> = ({ open, onCl
 
   const fetchLogs = async () => {
     try {
-      setLoading(true);
       const response = await api.get<{ logs: CommandLog[], total: number }>('/api/discord-logs', {
         params: {
           page: page,
@@ -126,8 +117,6 @@ export const DiscordLogsDialog: React.FC<DiscordLogsDialogProps> = ({ open, onCl
       setSnackbar({ open: true, message, severity: 'error' });
       setLogs([]);
       setTotalLogs(0);
-    } finally {
-      setLoading(false);
     }
   };
 

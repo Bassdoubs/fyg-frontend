@@ -20,12 +20,7 @@ import { Close as CloseIcon, FlightTakeoff as FlightTakeoffIcon } from '@mui/ico
 import Flag from 'react-world-flags';
 import { CountryStats } from '../../types';
 import { AirportData, ParkingData } from '@bassdoubs/fyg-shared';
-import axios from 'axios';
-import { motion } from 'framer-motion';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
-// Importer la fonction de mapping si nécessaire (à adapter)
-// import { getCountryInfo } from '../../hooks/useGlobalStats'; // Attention au chemin et à l'export
+import api from '../../../../services/api';
 
 interface CountryDetailsDialogProps {
   open: boolean;
@@ -55,14 +50,23 @@ export const CountryDetailsDialog: React.FC<CountryDetailsDialogProps> = ({
         setCountrySpecificParkings([]); // Vider l'ancien état
         try {
           const codesString = country.codes.join(',');
-          // Utiliser axios et le nouvel endpoint
-          const response = await axios.get<ParkingData[]>('/api/parkings/by-country', {
+          // Utiliser l'instance api et ajuster le chemin (sans /api)
+          const response = await api.get<ParkingData[]>('/parkings/by-country', {
             params: { countryCodes: codesString }
           });
-          setCountrySpecificParkings(response.data);
+          // Ajout de la vérification : s'assurer que response.data est bien un tableau
+          if (Array.isArray(response.data)) {
+            setCountrySpecificParkings(response.data);
+          } else {
+            // Si ce n'est pas un tableau, logguer une erreur et garder/mettre un tableau vide
+            console.error("Réponse API inattendue pour les parkings par pays (pas un tableau):", response.data);
+            setCountrySpecificParkings([]); 
+            setError("Données de parking invalides reçues."); // Optionnel: informer l'utilisateur
+          }
         } catch (err) {
           console.error("Erreur lors du chargement des parkings pour le pays:", err);
           setError("Impossible de charger les parkings pour ce pays.");
+          setCountrySpecificParkings([]); // Assurer que c'est un tableau en cas d'erreur
         } finally {
           setIsLoading(false);
         }
@@ -98,7 +102,7 @@ export const CountryDetailsDialog: React.FC<CountryDetailsDialogProps> = ({
 
   // Groupement par aéroport
   const parkingsByAirport = useMemo(() => {
-    if (!airportsMap || !countryParkings) return [];
+    if (!airportsMap || !Array.isArray(countryParkings)) return [];
     const grouped: { [airportICAO: string]: { name: string; parkings: ParkingData[] } } = {};
     countryParkings.forEach(p => {
       const currentAirportKey = p.airport;
