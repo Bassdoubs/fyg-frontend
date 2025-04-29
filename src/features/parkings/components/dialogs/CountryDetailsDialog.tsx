@@ -50,8 +50,8 @@ export const CountryDetailsDialog: React.FC<CountryDetailsDialogProps> = ({
         setCountrySpecificParkings([]); // Vider l'ancien état
         try {
           const codesString = country.codes.join(',');
-          // Utiliser l'instance api et ajuster le chemin (sans /api)
-          const response = await api.get<ParkingData[]>('/parkings/by-country', {
+          // Utiliser l'instance api et ajouter le préfixe /api
+          const response = await api.get<ParkingData[]>('/api/parkings/by-country', {
             params: { countryCodes: codesString }
           });
           // Ajout de la vérification : s'assurer que response.data est bien un tableau
