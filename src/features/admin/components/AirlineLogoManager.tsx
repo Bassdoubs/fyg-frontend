@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   List,
@@ -15,7 +15,9 @@ import {
   Button,
   Collapse,
   Chip,
-  Fade
+  Fade,
+  TextField,
+  InputAdornment
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import FlightIcon from '@mui/icons-material/Flight'; // Icône par défaut
@@ -23,6 +25,7 @@ import WarningIcon from '@mui/icons-material/Warning'; // Icône pour l'avertiss
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'; // Icône pour succès chargement
+import SearchIcon from '@mui/icons-material/Search'; // Ajouter SearchIcon
 import api from '../../../services/api'; // Utiliser l'instance api configurée
 // Utiliser AirlineData depuis @fyg/shared
 import type { AirlineData } from '@bassdoubs/fyg-shared'; 
@@ -46,6 +49,7 @@ const AirlineLogoManager: React.FC = () => {
   const [uploadError, setUploadError] = useState<{ id: string; message: string } | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
   const [showMissingList, setShowMissingList] = useState(false); // État pour afficher/masquer la liste
+  const [searchTerm, setSearchTerm] = useState(''); // Nouvel état pour la recherche
 
   // Effet pour charger les données depuis la nouvelle route API
   useEffect(() => {
@@ -139,6 +143,29 @@ const AirlineLogoManager: React.FC = () => {
       setSnackbar(null);
   };
 
+  // Calculer la liste filtrée (logique améliorée)
+  const filteredAirlines = useMemo(() => {
+    const trimmedSearchTerm = searchTerm.trim();
+    if (!trimmedSearchTerm) {
+      return managedAirlines;
+    }
+
+    const upperCaseSearchTerm = trimmedSearchTerm.toUpperCase();
+    const lowerCaseSearchTerm = trimmedSearchTerm.toLowerCase();
+    // Vérifier si le terme ressemble à un code ICAO (3 ou 4 lettres majuscules)
+    const isIcaoLike = /^[A-Z]{3,4}$/.test(upperCaseSearchTerm);
+
+    return managedAirlines.filter(airline => {
+      if (isIcaoLike) {
+        // Si ça ressemble à un ICAO, chercher une correspondance EXACTE dans le champ ICAO
+        return airline.icao.toUpperCase() === upperCaseSearchTerm;
+      } else {
+        // Sinon, chercher une correspondance partielle dans le nom
+        return airline.name.toLowerCase().includes(lowerCaseSearchTerm);
+      }
+    });
+  }, [managedAirlines, searchTerm]);
+
   // Affichage principal
   return (
     <Box>
@@ -209,10 +236,29 @@ const AirlineLogoManager: React.FC = () => {
             </Box>
           )}
 
-          {/* Liste des compagnies gérables - Itérer sur managedAirlines */}
-          {managedAirlines.length > 0 ? (
+          {/* Barre de recherche */}
+          <Box sx={{ mb: 2, maxWidth: '500px' }}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              size="small"
+              placeholder="Rechercher par nom ou ICAO..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+
+          {/* Liste des compagnies gérables - Utiliser filteredAirlines */}
+          {filteredAirlines.length > 0 ? (
             <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-              {managedAirlines.map((airline) => (
+              {filteredAirlines.map((airline) => (
                 <ListItem 
                   key={airline._id} 
                   divider 
@@ -267,8 +313,9 @@ const AirlineLogoManager: React.FC = () => {
               ))}
             </List>
           ) : (
-            <ListItem>
-                <ListItemText primary="Aucune compagnie gérable trouvée (vérifiez les données des parkings et des compagnies)." />
+             <ListItem>
+                {/* Adapter le message si une recherche est active */}
+                <ListItemText primary={searchTerm ? `Aucune compagnie trouvée pour "${searchTerm}"` : `Aucune compagnie gérable trouvée (vérifiez les données des parkings et des compagnies).`} />
             </ListItem>
           )}
         </>

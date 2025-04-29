@@ -6,6 +6,7 @@ import AirlineAdminTable from '../components/AirlineAdminTable';
 import AirlineLogoManager from '../components/AirlineLogoManager'; 
 // Importer le composant renommé
 import UserManagementPanel from '../components/UserManagementPanel';
+import DiscordLogsPanel from '../components/DiscordLogsPanel'; // Importer le nouveau panneau
 
 // Fonction utilitaire pour les panneaux d'onglets (pour l'accessibilité)
 interface TabPanelProps {
@@ -42,7 +43,7 @@ function a11yProps(index: number) {
 }
 
 const AdminPage = () => {
-  const [tabValue, setTabValue] = useState(0); // 0: Aéroports, 1: Compagnies, 2: Logos, 3: Validation Comptes
+  const [tabValue, setTabValue] = useState(0); // 0: Aéroports, 1: Compagnies, 2: Logos, 3: Utilisateurs, 4: Logs Discord
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -54,11 +55,18 @@ const AdminPage = () => {
       <Box sx={{ width: '100%' }}>
          {/* Barre d'onglets */}
          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={tabValue} onChange={handleTabChange} aria-label="Onglets d'administration">
+            <Tabs 
+              value={tabValue} 
+              onChange={handleTabChange} 
+              aria-label="Onglets d'administration"
+              variant="scrollable" // Permettre le défilement si trop d'onglets
+              scrollButtons="auto" // Afficher les boutons de défilement si nécessaire
+            >
               <Tab label="Aéroports" {...a11yProps(0)} />
               <Tab label="Compagnies Aériennes" {...a11yProps(1)} />
               <Tab label="Gestion Logos" {...a11yProps(2)} />
               <Tab label="Gestion Utilisateurs" {...a11yProps(3)} />
+              <Tab label="Logs Discord" {...a11yProps(4)} /> {/* Nouvel onglet */}
             </Tabs>
           </Box>
 
@@ -109,6 +117,14 @@ const AdminPage = () => {
          <TabPanel value={tabValue} index={3}>
             {/* Utiliser le composant renommé */}
             <UserManagementPanel />
+         </TabPanel>
+
+         {/* Nouveau Panneau pour les Logs Discord */}
+         <TabPanel value={tabValue} index={4}>
+            {/* Envelopper dans Paper pour la cohérence, si DiscordLogsPanel ne le fait pas déjà */}
+            {/* <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, mt: 0 }}> */}
+              <DiscordLogsPanel />
+            {/* </Paper> */}
          </TabPanel>
 
       </Box>

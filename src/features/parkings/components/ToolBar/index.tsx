@@ -7,13 +7,16 @@ import {
   Help, 
   Close as CloseIcon,
   Search as SearchIcon,
+  FlightTakeoff as TestIcon,
   Sort as SortIcon,
   FilterList,
   Check as CheckIcon
 } from '@mui/icons-material';
 import type { ParkingData, ImportResult } from '../../../../types/parking';
-import DiscordIcon from '../../../../components/DiscordIcon';
-import { LogsDialog } from '../../../../components/DiscordLogsDialog';
+// Supprimer l'import de DiscordIcon et LogsDialog s'ils ne sont plus utilisés ailleurs dans ce fichier
+// import DiscordIcon from '../../../../components/DiscordIcon'; 
+// import { LogsDialog } from '../../../../components/DiscordLogsDialog'; 
+
 // Importer les dialogues d'import dynamiquement
 const ImportDialog = lazy(() => import('../../../import/components/ImportDialog').then(module => ({ default: module.ImportDialog })));
 const ImportGuideDialog = lazy(() => import('../../../import/components/ImportGuide').then(module => ({ default: module.ImportGuideDialog })));
@@ -50,7 +53,8 @@ export const ToolBar: React.FC<ToolBarProps> = ({
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [showFileInput, setShowFileInput] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
-  const [isLogsOpen, setIsLogsOpen] = useState(false);
+  // Supprimer l'état isLogsOpen
+  // const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const { isDarkMode, renderKey } = useDarkMode();
   const theme = useTheme();
@@ -205,11 +209,21 @@ export const ToolBar: React.FC<ToolBarProps> = ({
         }}
       >
         {/* Barre de recherche */}
-        <div className="relative flex-grow max-w-md">
+        <div 
+          className="relative flex-grow max-w-md rounded-lg border overflow-hidden"
+          style={{
+             backgroundColor: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : 'rgba(243, 244, 246, 0.8)',
+             borderColor: isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(209, 213, 219, 0.6)',
+             backdropFilter: 'blur(4px)',
+             boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+          }}
+        >
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <SearchIcon 
-              fontSize="small" 
-              sx={{ color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' }} 
+              sx={{
+                fontSize: '20px', 
+                color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)' 
+              }} 
             />
           </div>
           <input
@@ -217,13 +231,9 @@ export const ToolBar: React.FC<ToolBarProps> = ({
             placeholder="Rechercher un parking..."
             value={searchValue}
             onChange={handleSearch}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border focus:outline-none focus:ring-2 transition-all"
+            className="w-full pl-10 pr-4 py-2 focus:outline-none focus:ring-0 transition-all bg-transparent border-none"
             style={{
-              backgroundColor: isDarkMode ? 'rgba(55, 65, 81, 0.5)' : 'rgba(243, 244, 246, 0.8)',
-              borderColor: isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(209, 213, 219, 0.6)',
               color: isDarkMode ? '#fff' : '#000',
-              backdropFilter: 'blur(4px)',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
               caretColor: primaryColor,
             }}
           />
@@ -360,33 +370,6 @@ export const ToolBar: React.FC<ToolBarProps> = ({
           {/* Séparateur vertical */}
           <div className="h-8 w-px" style={{ backgroundColor: isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(209, 213, 219, 0.6)' }}></div>
 
-          {/* Bouton logs Discord */}
-          <Tooltip title="Logs Discord" arrow placement="top">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <IconButton
-                onClick={() => setIsLogsOpen(true)}
-                size="small"
-                sx={{
-                  backgroundColor: buttonBgBase,
-                  backdropFilter: 'blur(4px)',
-                  '&:hover': {
-                    backgroundColor: buttonBgHover
-                  }
-                }}
-              >
-                <DiscordIcon 
-                  style={{ 
-                    color: isDarkMode ? '#5865F2' : '#5865F2',
-                    fontSize: '1.2rem'
-                  }} 
-                />
-              </IconButton>
-            </motion.div>
-          </Tooltip>
-          
           {/* Bouton guide d'import */}
           <Tooltip title="Guide d'import" arrow placement="top">
             <motion.div
@@ -494,11 +477,6 @@ export const ToolBar: React.FC<ToolBarProps> = ({
           onClose={() => setIsGuideOpen(false)} 
         />
       </Suspense>
-      
-      <LogsDialog 
-        open={isLogsOpen} 
-        onClose={() => setIsLogsOpen(false)} 
-      />
     </div>
   );
 }; 
