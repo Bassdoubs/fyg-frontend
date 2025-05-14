@@ -94,6 +94,222 @@ interface CommandStats {
 // Couleurs pour les graphiques
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#6b486b', '#a05d56'];
 
+// Fonction simplifiée et plus efficace pour gérer les graduations et leur affichage
+const customTickFormatter = (tickItem: string, period: string): string => {
+  const date = new Date(tickItem);
+  
+  // Pour "Tout l'historique" - format compact: "janv. 23"
+  if (period === 'all') {
+    // Afficher seulement le mois et l'année pour le 1er du mois
+    if (date.getDate() === 1) {
+      return new Intl.DateTimeFormat('fr-FR', { month: 'short', year: '2-digit' }).format(date);
+    }
+    return ''; // Masquer les autres jours
+  }
+  
+  // Pour les périodes très longues (90 jours) - format: "1 janv." ou "15 janv."
+  if (period === '90') {
+    // Afficher seulement les 1er et 15 du mois, avec le format jour + mois
+    if (date.getDate() === 1 || date.getDate() === 15) {
+      return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(date);
+    }
+    return ''; // Masquer les autres jours
+  }
+  
+  // Pour les périodes moyennes (30, 60 jours) - format: "1", "5", "10", ...
+  if (period === '30' || period === '60') {
+    // Afficher tous les 5 jours ou le 1er du mois
+    if (date.getDate() % 5 === 0 || date.getDate() === 1) {
+      return date.getDate().toString(); // Juste le numéro du jour
+    }
+    return ''; // Masquer les autres jours
+  }
+  
+  // Pour les périodes courtes (7, 14 jours) - format: "1 janv."
+  return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(date);
+};
+
+// Générer un tableau de ticks optimal selon la période
+const getOptimalTicks = (data: { date: string }[], period: string): string[] => {
+  if (!data || data.length === 0) return [];
+  
+  // Pour les périodes courtes, utiliser un nombre raisonnable de ticks
+  if (period === '7') {
+    // Pour 7 jours: afficher tous les jours
+    return data.map(item => item.date);
+  }
+  
+  if (period === '14') {
+    // Pour 14 jours: afficher un jour sur deux
+    return data.filter((_, index) => index % 2 === 0).map(item => item.date);
+  }
+  
+  const ticks: string[] = [];
+  
+  // Toujours inclure le premier jour
+  if (data.length > 0) {
+    ticks.push(data[0].date);
+  }
+  
+  // Pour "Tout l'historique"
+  if (period === 'all') {
+    // Ne garder que le 1er jour de chaque mois
+    const seen = new Set<string>();
+    
+    data.forEach(item => {
+      const date = new Date(item.date);
+      if (date.getDate() === 1) {
+        const key = `${date.getFullYear()}-${date.getMonth()}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          ticks.push(item.date);
+        }
+      }
+    });
+  } 
+  // Pour les périodes longues (90 jours)
+  else if (period === '90') {
+    // Ajouter le 1er et le 15 de chaque mois
+    data.forEach(item => {
+      const date = new Date(item.date);
+      if (date.getDate() === 1 || date.getDate() === 15) {
+        ticks.push(item.date);
+      }
+    });
+  }
+  // Pour les périodes moyennes (30, 60 jours)
+  else if (period === '30' || period === '60') {
+    // Tous les 5 jours ou le 1er du mois
+    data.forEach(item => {
+      const date = new Date(item.date);
+      if (date.getDate() % 5 === 0 || date.getDate() === 1) {
+        ticks.push(item.date);
+      }
+    });
+  }
+  // Pour les périodes plus courtes (14 jours déjà géré ci-dessus)
+  else {
+    // Ajouter des ticks intermédiaires si pas déjà géré
+    data.forEach((item, index) => {
+      // Sauter le premier (déjà ajouté) et ajouter des points intermédiaires selon le besoin
+      if (index > 0 && index < data.length - 1) {
+        ticks.push(item.date);
+      }
+    });
+  }
+  
+  // Toujours ajouter le dernier jour s'il n'est pas déjà inclus et s'il y a des données
+  if (data.length > 1 && ticks[ticks.length - 1] !== data[data.length - 1].date) {
+    ticks.push(data[data.length - 1].date);
+  }
+  
+  // Limiter le nombre maximum de ticks pour éviter l'encombrement
+  if (ticks.length > 15) {
+    const step = Math.ceil(ticks.length / 15);
+    return ticks.filter((_, i) => i % step === 0 || i === ticks.length - 1);
+  }
+  
+  return ticks;
+};
+
+// Composant pour générer des ticks personnalisés avec la couleur correspondante pour le graphique de TOP aéroports
+interface CustomTickProps {
+  x?: number;
+  y?: number;
+  payload?: {
+    value: string;
+  };
+  index: number;
+  colors: string[];
+}
+
+const CustomizedAirportTick = (props: CustomTickProps) => {
+  const { x = 0, y = 0, payload, colors } = props;
+  const index = props.index % colors.length;
+  const color = colors[index];
+  
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text 
+        x={0} 
+        y={0} 
+        dy={4} 
+        textAnchor="end" 
+        fill={color} 
+        style={{ fontWeight: 600 }}
+      >
+        {payload?.value || ''}
+      </text>
+    </g>
+  );
+};
+
+// Composant pour générer des ticks personnalisés avec la couleur correspondante pour le graphique de TOP compagnies
+const CustomizedAirlineTick = (props: CustomTickProps) => {
+  const { x = 0, y = 0, payload, colors } = props;
+  const index = (props.index + 5) % colors.length;
+  const color = colors[index];
+  
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text 
+        x={0} 
+        y={0} 
+        dy={4} 
+        textAnchor="end" 
+        fill={color} 
+        style={{ fontWeight: 600 }}
+      >
+        {payload?.value || ''}
+      </text>
+    </g>
+  );
+};
+
+// Composant pour générer des ticks personnalisés avec la couleur correspondante pour le graphique des utilisateurs les plus actifs
+const CustomizedUserTick = (props: CustomTickProps) => {
+  const { x = 0, y = 0, payload, colors } = props;
+  const index = (props.index + 2) % colors.length;
+  const color = colors[index];
+  
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text 
+        x={0} 
+        y={0} 
+        dy={4} 
+        textAnchor="end" 
+        fill={color} 
+        style={{ fontWeight: 600 }}
+      >
+        {payload?.value || ''}
+      </text>
+    </g>
+  );
+};
+
+// Composant pour générer des ticks personnalisés avec la couleur correspondante pour le graphique des utilisateurs ACARS
+const CustomizedAcarsUserTick = (props: CustomTickProps) => {
+  const { x = 0, y = 0, payload, colors } = props;
+  const index = props.index % colors.length;
+  const color = colors[index];
+  
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text 
+        x={0} 
+        y={0} 
+        dy={4} 
+        textAnchor="end" 
+        fill={color} 
+        style={{ fontWeight: 600 }}
+      >
+        {payload?.value || ''}
+      </text>
+    </g>
+  );
+};
+
 export const StatsManager = () => {
   const { isDarkMode, renderKey } = useDarkMode();
   const [stats, setStats] = useState<CommandStats | null>(null);
@@ -223,16 +439,25 @@ export const StatsManager = () => {
       setLoading(true);
       setError(null); // Reset error before fetching
       
+      // Vérifier si on doit récupérer tous les logs sans pagination
+      const shouldRetrieveAll = period === 'all';
+      
       // Récupération des statistiques générales
-      const statsUrl = `/api/discord-logs/stats?period=${period}`;
+      const statsUrl = `/api/discord-logs/stats?period=${period}${shouldRetrieveAll ? '&retrieveAll=true' : ''}`;
       const response = await api.get(statsUrl);
       const data = response.data;
       setStats(data);
       
-      // Récupération des logs avec pagination
-      const logsUrl = `/api/discord-logs?page=${page}&limit=${rowsPerPage}&period=${period}`;
+      // Récupération des logs avec ou sans pagination selon la période
+      const baseLogsUrl = `/api/discord-logs?period=${period}`;
+      const paginationParams = shouldRetrieveAll 
+        ? '&retrieveAll=true' 
+        : `&page=${page}&limit=${rowsPerPage}`;
+      
+      const logsUrl = baseLogsUrl + paginationParams;
       const logsResponse = await api.get(logsUrl);
       const logsData = logsResponse.data;
+      
       setLogs(logsData.logs || []);
       setTotalLogs(logsData.total || 0);
       
@@ -482,6 +707,10 @@ export const StatsManager = () => {
                               <XAxis 
                                 dataKey="date" 
                                 tick={{ fill: isDarkMode ? "#bbb" : "#666" }}
+                                height={50}
+                                tickFormatter={(tick) => customTickFormatter(tick, period)}
+                                ticks={getOptimalTicks(stats.usageByDay, period)}
+                                minTickGap={period === 'all' ? 50 : period === '90' ? 40 : period === '60' ? 35 : 30}
                               />
                               <YAxis 
                                 yAxisId="left" 
@@ -497,7 +726,15 @@ export const StatsManager = () => {
                                   backgroundColor: isDarkMode ? "#333" : "#fff",
                                   color: isDarkMode ? "#fff" : "#333",
                                   border: `1px solid ${isDarkMode ? "#555" : "#ddd"}`
-                                }} 
+                                }}
+                                labelFormatter={(label) => {
+                                  const date = new Date(label);
+                                  return new Intl.DateTimeFormat('fr-FR', { 
+                                    day: 'numeric', 
+                                    month: 'long', 
+                                    year: 'numeric' 
+                                  }).format(date);
+                                }}
                               />
                               <Legend wrapperStyle={{ color: isDarkMode ? "#bbb" : "#666" }} />
                               <Line
@@ -542,9 +779,10 @@ export const StatsManager = () => {
                               />
                               <YAxis 
                                 dataKey="airport" 
-                                type="category" 
-                                tick={{ fill: isDarkMode ? "#bbb" : "#666" }}
+                                type="category"
+                                tick={(props) => <CustomizedAirportTick {...props} colors={COLORS} index={props.index} />}
                                 width={80}
+                                interval={0}
                               />
                               <Tooltip 
                                 contentStyle={{ 
@@ -580,9 +818,10 @@ export const StatsManager = () => {
                               />
                               <YAxis 
                                 dataKey="airline" 
-                                type="category" 
-                                tick={{ fill: isDarkMode ? "#bbb" : "#666" }}
+                                type="category"
+                                tick={(props) => <CustomizedAirlineTick {...props} colors={COLORS} index={props.index} />}
                                 width={80}
+                                interval={0}
                               />
                               <Tooltip 
                                 contentStyle={{ 
@@ -629,9 +868,10 @@ export const StatsManager = () => {
                                 />
                                 <YAxis 
                                   dataKey="nickname" 
-                                  type="category" 
-                                  tick={{ fill: isDarkMode ? "#bbb" : "#666" }}
+                                  type="category"
+                                  tick={(props) => <CustomizedUserTick {...props} colors={COLORS} index={props.index} />}
                                   width={120}
+                                  interval={0}
                                 />
                                 <Tooltip 
                                   contentStyle={{ 
@@ -748,6 +988,10 @@ export const StatsManager = () => {
                               <XAxis 
                                 dataKey="date" 
                                 tick={{ fill: isDarkMode ? "#bbb" : "#666" }}
+                                height={50}
+                                tickFormatter={(tick) => customTickFormatter(tick, period)}
+                                ticks={getOptimalTicks(stats.acarsStats.usageByDay, period)}
+                                minTickGap={period === 'all' ? 50 : period === '90' ? 40 : period === '60' ? 35 : 30}
                               />
                               <YAxis 
                                 yAxisId="left" 
@@ -763,7 +1007,15 @@ export const StatsManager = () => {
                                   backgroundColor: isDarkMode ? "#333" : "#fff",
                                   color: isDarkMode ? "#fff" : "#333",
                                   border: `1px solid ${isDarkMode ? "#555" : "#ddd"}`
-                                }} 
+                                }}
+                                labelFormatter={(label) => {
+                                  const date = new Date(label);
+                                  return new Intl.DateTimeFormat('fr-FR', { 
+                                    day: 'numeric', 
+                                    month: 'long', 
+                                    year: 'numeric' 
+                                  }).format(date);
+                                }}
                               />
                               <Legend wrapperStyle={{ color: isDarkMode ? "#bbb" : "#666" }} />
                               <Line
@@ -858,9 +1110,10 @@ export const StatsManager = () => {
                                 />
                                 <YAxis 
                                   dataKey="nickname" 
-                                  type="category" 
-                                  tick={{ fill: isDarkMode ? "#bbb" : "#666" }}
+                                  type="category"
+                                  tick={(props) => <CustomizedAcarsUserTick {...props} colors={COLORS} index={props.index} />}
                                   width={120}
+                                  interval={0}
                                 />
                                 <Tooltip 
                                   contentStyle={{ 

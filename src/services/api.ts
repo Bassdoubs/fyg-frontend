@@ -45,7 +45,51 @@ api.interceptors.request.use(
   }
 );
 
-// Intercepteurs pour le debug - uniquement en développement
+// Intercepteur principal pour gérer les réponses et erreurs
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response) {
+      // Erreur 401
+      if (error.response.status === 401) {
+        console.warn('Erreur 401 détectée: Token invalide ou expiré');
+        
+        // Vérifier si c'est spécifiquement une erreur d'expiration
+        const isExpired = error.response.data.expired || 
+                          error.response.data.message === 'Token expiré' ||
+                          error.response.data.message?.includes('expiré');
+        
+        // 1. Nettoyer le localStorage
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userInfo');
+        
+        // 2. Redirection basée sur le type d'erreur
+        if (isExpired) {
+          // Rediriger vers login avec le paramètre expired=true
+          window.location.href = '/login?expired=true';
+        } else {
+          // Redirection standard vers login
+          window.location.href = '/login';
+        }
+        
+        // 3. Stopper la propagation de l'erreur
+        return new Promise(() => {}); 
+      }
+      
+      // Erreur 403
+      if (error.response.status === 403) {
+        console.warn('Erreur 403 détectée: Accès refusé.');
+        // On pourrait afficher un message à l'utilisateur ici via un système de notification global
+        // store.dispatch(showGlobalNotification('Vous n\'avez pas les droits pour effectuer cette action.', 'error'));
+      }
+    }
+    
+    // Rejeter les autres erreurs
+    return Promise.reject(error);
+  }
+);
+
+// Intercepteurs supplémentaires pour le debug - uniquement en développement
 if (!import.meta.env.PROD) {
   api.interceptors.request.use(request => {
     // Ce log montrera maintenant les en-têtes, y compris Authorization si présent
@@ -54,49 +98,9 @@ if (!import.meta.env.PROD) {
   });
 
   api.interceptors.response.use(
-    response => {
-      // Supprimer le log de réponse en dev
-      // if (!import.meta.env.PROD) {
-      //   console.log('Response:', response);
-      // }
-      return response;
-    },
+    response => response,
     error => {
-      // Supprimer le log détaillé de l'erreur interceptée en dev
-      // if (!import.meta.env.PROD) {
-      //   console.error('API Error Intercepted:', error);
-      // }
-
-      if (error.response) {
-        // Erreur 401
-        if (error.response.status === 401) {
-          // Garder ce warning important
-          console.warn('Erreur 401 détectée: Token invalide ou expiré. Déconnexion...');
-          
-          // 1. Nettoyer directement le localStorage
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('userInfo');
-          
-          // 2. Redirection vers la page de login (force le rechargement)
-          window.location.href = '/login';
-
-          // 3. Stopper la propagation de l'erreur
-          return new Promise(() => {}); 
-        }
-        
-        // Erreur 403
-        if (error.response.status === 403) {
-          // Garder ce warning important
-          console.warn('Erreur 403 détectée: Accès refusé.');
-          // On pourrait afficher un message à l'utilisateur ici via un système de notification global
-          // store.dispatch(showGlobalNotification('Vous n\'avez pas les droits pour effectuer cette action.', 'error'));
-        }
-
-        // Autres erreurs (404, 500, etc.)
-        // Laisser l'erreur se propager pour être potentiellement gérée par le composant appelant
-      }
-      
-      // Rejeter les autres erreurs
+      // Laisser passer l'erreur vers l'intercepteur principal ci-dessus
       return Promise.reject(error);
     }
   );

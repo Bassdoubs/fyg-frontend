@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { CssBaseline/*, Box*/ } from '@mui/material';
 import { LoginDialog } from './components/LoginDialog';
 import { RegisterDialog } from './components/RegisterDialog';
+import SessionExpiredModal from './components/SessionExpiredModal';
 import { StatsManager } from './features/stats/StatsManager';
 import { motion } from 'framer-motion';
 import DiscordFeedbackManager from './features/discord-feedback/DiscordFeedbackManager';
@@ -20,6 +21,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showRegisterDialog, setShowRegisterDialog] = useState(false);
+  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
   const location = useLocation();
   const [bgImageLoaded, setBgImageLoaded] = useState(false);
   const dispatch = useDispatch<typeof store.dispatch>();
@@ -45,17 +47,28 @@ function App() {
     : 'bg-gradient-light text-slate-900';
 
   useEffect(() => {
+    // Vérifier si l'URL contient le paramètre expired=true
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('expired') === 'true') {
+      setShowSessionExpiredModal(true);
+    }
+    
     const token = localStorage.getItem('authToken');
     if (token) {
       setIsAuthenticated(true);
       dispatch(fetchAirports());
     } else {
       setIsAuthenticated(false);
-      setShowLoginDialog(true); 
+      
+      // Ne pas montrer automatiquement le login si on vient d'une expiration de session
+      if (!urlParams.get('expired')) {
+        setShowLoginDialog(true);
+      }
+      
       setShowRegisterDialog(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps 
-  }, [dispatch]);
+  }, [dispatch, location.search]);
 
   const handleLogin = (success: boolean) => {
     setIsAuthenticated(success);
@@ -89,6 +102,19 @@ function App() {
     setShowRegisterDialog(false);
     // Optionnel: rouvrir LoginDialog si l'utilisateur ferme Register sans s'inscrire ?
     // if (!isAuthenticated) setShowLoginDialog(true);
+  };
+
+  const handleSessionExpiredClose = () => {
+    setShowSessionExpiredModal(false);
+    
+    // Nettoyer l'URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete('expired');
+    window.history.replaceState({}, document.title, url.toString());
+    
+    // Le dialogue de connexion sera affiché automatiquement par le composant SessionExpiredModal
+    // qui appelle navigate('/login')
+    // Ne plus afficher automatiquement le login dialog ici
   };
 
   // Animation de transition entre les routes
@@ -238,6 +264,10 @@ function App() {
           open={showRegisterDialog} 
           onClose={handleCloseRegisterDialog}
           onSwitchToLogin={handleSwitchToLogin}
+        />
+        <SessionExpiredModal 
+          open={showSessionExpiredModal}
+          onClose={handleSessionExpiredClose}
         />
       </div>
     </ThemeProvider>
