@@ -15,7 +15,7 @@ import {
 import { Close as CloseIcon, Public as PublicIcon, Search as SearchIcon, RestartAlt as RestartAltIcon } from '@mui/icons-material';
 import * as Cesium from 'cesium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
-import { AirportData /*, ParkingData */ } from '../../../../../packages/shared/src/types';
+import { AirportData } from '@bassdoubs/fyg-shared';
 import countries from "i18n-iso-countries";
 import frLocale from "i18n-iso-countries/langs/fr.json";
 import { useDebounce } from '../../../../hooks/useDebounce';
@@ -57,7 +57,7 @@ export const AirportGlobeDialog: React.FC<AirportGlobeDialogProps> = ({
   // Fonction pour définir la vue initiale/reset (Europe/France)
   const setInitialView = useCallback(() => {
     if (!viewerRef.current) return;
-    console.log("[AirportGlobe] Setting initial/reset view (Europe/France).");
+    // console.log("[AirportGlobe] Setting initial/reset view (Europe/France).");
     viewerRef.current.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(10, 45, 15000000), // Lon, Lat, Altitude (~15000km)
       orientation: {
@@ -71,14 +71,13 @@ export const AirportGlobeDialog: React.FC<AirportGlobeDialogProps> = ({
 
   // ---- LOGGING PROPS ON RENDER ----
   useEffect(() => {
-    console.log(`[AirportGlobe] Props reçues - airportsData: ${airportsData?.length}, allParkingAirportIcaos: ${allParkingAirportIcaos?.length}`);
+    // console.log(`[AirportGlobe] Props reçues - airportsData: ${airportsData?.length}, allParkingAirportIcaos: ${allParkingAirportIcaos?.length}`);
   }, [airportsData, allParkingAirportIcaos]);
 
   // Calculer parkingIcaos à partir de la prop allParkingAirportIcaos
   const parkingIcaos = useMemo(() => {
-    // Créer un Set directement depuis la prop
     const icaos = new Set(allParkingAirportIcaos || []); 
-    console.log(`[AirportGlobe] parkingIcaos créé depuis prop. Taille: ${icaos.size}`);
+    // console.log(`[AirportGlobe] parkingIcaos créé depuis prop. Taille: ${icaos.size}`);
     return icaos;
   }, [allParkingAirportIcaos]);
 
@@ -95,9 +94,9 @@ export const AirportGlobeDialog: React.FC<AirportGlobeDialogProps> = ({
       // console.log(`[AirportGlobe] Filtre pour ${airport.icao}: inParkings=${icaoInParkings}, hasCoords=${hasCoords}`);
       return hasIcao && icaoInParkings && hasCoords;
     });
-    console.log(`[AirportGlobe] relevantAirports calculé. Taille: ${filtered.length}`); // Log taille
+    // console.log(`[AirportGlobe] relevantAirports calculé. Taille: ${filtered.length}`); // Log taille
     if(filtered.length === 0 && airportsData.length > 0 && parkingIcaos.size > 0) {
-        console.warn("[AirportGlobe] Le filtre a supprimé TOUS les aéroports pertinents. Vérifiez les ICAO/coordonnées.");
+        // console.warn("[AirportGlobe] Le filtre a supprimé TOUS les aéroports pertinents. Vérifiez les ICAO/coordonnées.");
     }
     return filtered;
   }, [airportsData, parkingIcaos]);
@@ -196,7 +195,7 @@ export const AirportGlobeDialog: React.FC<AirportGlobeDialogProps> = ({
           }
         }
       });
-      console.log(`[AirportGlobe] Boucle d'ajout terminée. ${addedCount} entités ajoutées.`);
+      // console.log(`[AirportGlobe] Boucle d'ajout terminée. ${addedCount} entités ajoutées.`);
 
       // --- LOGIQUE DE ZOOM MISE À JOUR --- 
       if (debouncedSearchTerm && searchedAirports.length === 1) {
@@ -204,13 +203,13 @@ export const AirportGlobeDialog: React.FC<AirportGlobeDialogProps> = ({
         const targetIcao = searchedAirports[0].icao;
         const targetEntity = viewer.entities.getById(targetIcao);
         if (targetEntity) {
-          console.log(`[AirportGlobe] Recherche unique pour ${targetIcao}, zoom sur l'entité.`);
+          // console.log(`[AirportGlobe] Recherche unique pour ${targetIcao}, zoom sur l'entité.`);
           viewer.flyTo(targetEntity, { 
              duration: 1.5,
              offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-90), 50000) 
           });
         } else {
-          console.warn(`[AirportGlobe] Impossible de trouver l'entité pour ${targetIcao} pour le zoom.`);
+          // console.warn(`[AirportGlobe] Impossible de trouver l'entité pour ${targetIcao} pour le zoom.`);
           // Fallback sur la vue initiale si l'entité n'est pas trouvée
           setInitialView(); 
         }
@@ -219,7 +218,7 @@ export const AirportGlobeDialog: React.FC<AirportGlobeDialogProps> = ({
         setInitialView();
       } else if (debouncedSearchTerm && viewer.entities.values.length > 0) {
         // Si recherche avec PLUSIEURS résultats: Zoom sur l'étendue des résultats
-        console.log(`[AirportGlobe] Zoom sur l'étendue des ${viewer.entities.values.length} résultats.`);
+        // console.log(`[AirportGlobe] Zoom sur l'étendue des ${viewer.entities.values.length} résultats.`);
          viewer.flyTo(viewer.entities, { 
            duration: 1.5,
            offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-60), 0)

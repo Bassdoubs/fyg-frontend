@@ -7,6 +7,7 @@ import AirlineLogoManager from '../components/AirlineLogoManager';
 // Importer le composant renommé
 import UserManagementPanel from '../components/UserManagementPanel';
 import DiscordLogsPanel from '../components/DiscordLogsPanel'; // Importer le nouveau panneau
+import ActivityLogPanel from '../components/ActivityLogPanel'; // <-- Importer le panneau des logs d'activité
 
 // Fonction utilitaire pour les panneaux d'onglets (pour l'accessibilité)
 interface TabPanelProps {
@@ -43,7 +44,7 @@ function a11yProps(index: number) {
 }
 
 const AdminPage = () => {
-  const [tabValue, setTabValue] = useState(0); // 0: Aéroports, 1: Compagnies, 2: Logos, 3: Utilisateurs, 4: Logs Discord
+  const [tabValue, setTabValue] = useState(0); // 0: Aéroports, 1: Compagnies, 2: Logos, 3: Utilisateurs, 4: Logs Discord, 5: Journal d'Activité
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -66,7 +67,8 @@ const AdminPage = () => {
               <Tab label="Compagnies Aériennes" {...a11yProps(1)} />
               <Tab label="Gestion Logos" {...a11yProps(2)} />
               <Tab label="Gestion Utilisateurs" {...a11yProps(3)} />
-              <Tab label="Logs Discord" {...a11yProps(4)} /> {/* Nouvel onglet */}
+              <Tab label="Logs Discord" {...a11yProps(4)} />
+              <Tab label="Journal d'Activité" {...a11yProps(5)} />
             </Tabs>
           </Box>
 
@@ -125,6 +127,12 @@ const AdminPage = () => {
             {/* <Paper elevation={3} sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, mt: 0 }}> */}
               <DiscordLogsPanel />
             {/* </Paper> */}
+         </TabPanel>
+
+         {/* Nouveau Panneau pour le Journal d'Activité */}
+         <TabPanel value={tabValue} index={5}>
+            {/* Le ActivityLogPanel inclut déjà son propre Paper/Box, pas besoin d'en rajouter ici a priori */}
+            <ActivityLogPanel />
          </TabPanel>
 
       </Box>

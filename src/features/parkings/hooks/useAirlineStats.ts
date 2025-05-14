@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 // import { useEntities } from './useEntities'; 
-import { ParkingData as Parking, AirlineData as Airline } from '../../../../packages/shared/src/types'; // Retirer ProcessedAirline
+import { ParkingData as Parking, AirlineData as Airline } from '@bassdoubs/fyg-shared'; // <-- Import depuis le package
 import { ProcessedAirline } from '../types'; // Importer ProcessedAirline depuis le fichier local
 import { selectParkings, selectLoading as selectParkingsLoading, selectError as selectParkingsError } from '../../../store/parkingSlice'; // Correction chemin slice
 import { selectAirlines, selectAirlinesLoading } from '../../../store/airlinesSlice'; // Correction chemin slice
@@ -38,20 +38,20 @@ export const useAirlineStats = () => {
 
   // Le traitement des données dépend maintenant directement des données globales
   const processedAirlines = useMemo((): ProcessedAirline[] => {
-    console.log(`[useAirlineStats] Calcul processedAirlines. isLoading: ${isLoading}, Error: ${combinedError}, Parkings(flat): ${flatParkings?.length}, Airlines: ${airlines?.length}`);
+    // console.log(`[useAirlineStats] Calcul processedAirlines. isLoading: ${isLoading}, Error: ${combinedError}, Parkings(flat): ${flatParkings?.length}, Airlines: ${airlines?.length}`);
 
     // Utiliser flatParkings pour la condition et le traitement
     if (isLoading || combinedError || !flatParkings || flatParkings.length === 0 || !airlines || airlines.length === 0) {
-      console.log("[useAirlineStats] Condition retour tableau vide remplie (loading/error/données vides).");
+      // console.log("[useAirlineStats] Condition retour tableau vide remplie (loading/error/données vides).");
       return [];
     }
 
-    console.log("[useAirlineStats] Début traitement données...");
+    // console.log("[useAirlineStats] Début traitement données...");
 
     // 1. Map des détails des compagnies
     const airlineMap = new Map<string, Airline>();
     airlines.forEach(a => airlineMap.set(a.icao, a));
-    console.log(`[useAirlineStats] airlineMap créée. Taille: ${airlineMap.size}`);
+    // console.log(`[useAirlineStats] airlineMap créée. Taille: ${airlineMap.size}`);
 
     // 2. Map des données par compagnie trouvée dans les parkings
     const airlineDataMap = new Map<string, { airports: Set<string>, parkingsList: Parking[] }>();
@@ -67,7 +67,7 @@ export const useAirlineStats = () => {
          airlineEntry.parkingsList.push(p);
       }
     });
-    console.log(`[useAirlineStats] airlineDataMap créée (compagnies présentes dans parkings). Taille: ${airlineDataMap.size}`);
+    // console.log(`[useAirlineStats] airlineDataMap créée (compagnies présentes dans parkings). Taille: ${airlineDataMap.size}`);
 
     // 3. Construction du résultat final
     const result: ProcessedAirline[] = [];
@@ -92,11 +92,11 @@ export const useAirlineStats = () => {
         result.push(processed);
       } else {
         notFoundCount++;
-        console.warn(`[useAirlineStats] Détails non trouvés pour la compagnie ICAO: ${icao}`);
+        // console.warn(`[useAirlineStats] Détails non trouvés pour la compagnie ICAO: ${icao}`); // Garder ce warn ? Non, supprimons-le pour nettoyer.
       }
     });
 
-    console.log(`[useAirlineStats] Traitement final: ${foundCount} compagnies trouvées, ${notFoundCount} non trouvées. Taille résultat final: ${result.length}`);
+    // console.log(`[useAirlineStats] Traitement final: ${foundCount} compagnies trouvées, ${notFoundCount} non trouvées. Taille résultat final: ${result.length}`);
     return result.sort((a, b) => a.name.localeCompare(b.name));
 
   }, [flatParkings, airlines, isLoading, combinedError]); // Dépendre de flatParkings

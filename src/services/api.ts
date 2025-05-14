@@ -5,11 +5,11 @@ const baseURL = import.meta.env.PROD
   ? import.meta.env.VITE_API_BASE_URL // Ex: https://fyg-backend-prod...app
   : 'http://localhost:3000';          // Ex: http://localhost:3000 (sans /api)
 
-// ----> AJOUT DIAGNOSTIC <----
-console.log("[api.ts] Détection environnement PROD:", import.meta.env.PROD);
-console.log("[api.ts] Valeur VITE_API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
-console.log("[api.ts] baseURL effective utilisée pour Axios:", baseURL);
-// ----> FIN DIAGNOSTIC <----
+// ----> SUPPRESSION DIAGNOSTIC <----
+// console.log("[api.ts] Détection environnement PROD:", import.meta.env.PROD);
+// console.log("[api.ts] Valeur VITE_API_BASE_URL:", import.meta.env.VITE_API_BASE_URL);
+// console.log("[api.ts] baseURL effective utilisée pour Axios:", baseURL);
+// ----> FIN SUPPRESSION <----
 
 // Code de diagnostic supprimé :
 // // !! DIAGNOSTIC TEMPORAIRE : URL Backend en dur !!
@@ -49,7 +49,7 @@ api.interceptors.request.use(
 if (!import.meta.env.PROD) {
   api.interceptors.request.use(request => {
     // Ce log montrera maintenant les en-têtes, y compris Authorization si présent
-    console.log('Starting Request:', request);
+    // console.log('Starting Request:', request); // <-- Commenter ou supprimer ce log
     return request;
   });
 

@@ -7,16 +7,11 @@ import {
   Help, 
   Close as CloseIcon,
   Search as SearchIcon,
-  FlightTakeoff as TestIcon,
   Sort as SortIcon,
   FilterList,
   Check as CheckIcon
 } from '@mui/icons-material';
 import type { ParkingData, ImportResult } from '../../../../types/parking';
-// Supprimer l'import de DiscordIcon et LogsDialog s'ils ne sont plus utilisés ailleurs dans ce fichier
-// import DiscordIcon from '../../../../components/DiscordIcon'; 
-// import { LogsDialog } from '../../../../components/DiscordLogsDialog'; 
-
 // Importer les dialogues d'import dynamiquement
 const ImportDialog = lazy(() => import('../../../import/components/ImportDialog').then(module => ({ default: module.ImportDialog })));
 const ImportGuideDialog = lazy(() => import('../../../import/components/ImportGuide').then(module => ({ default: module.ImportGuideDialog })));

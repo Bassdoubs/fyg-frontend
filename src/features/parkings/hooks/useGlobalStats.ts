@@ -73,14 +73,14 @@ export const useGlobalStats = () => {
     data.forEach(item => {
       const originalCode = item.code?.toUpperCase(); // Le code reçu (ex: LF, SO, GF, TF)
       if (!originalCode) {
-        console.warn("Code manquant dans l'item:", item);
+        // console.warn("Code manquant dans l'item:", item); // Garder ce warn ?
         return;
       }
 
       // 1. Trouver les infos via le code original comme clé OACI
       const oaciInfo = countriesOACI[originalCode]; 
       if (!oaciInfo) {
-        console.warn(`Code OACI préfixe inconnu dans countriesOACI: ${originalCode}`);
+        // console.warn(`Code OACI préfixe inconnu dans countriesOACI: ${originalCode}`); // Garder ce warn ?
         // Ici on pourrait tenter de voir si originalCode est un ISO connu comme fallback,
         // mais on suit la directive stricte basée sur les préfixes OACI comme clés.
         return; 
